@@ -24,6 +24,8 @@ class Env:
         self.step = 0
         self.score = 0
         self.reward = 0
+        self.max_loss = 100000
+        self.gain = 0
         self.terminal = False
         self.code = None
         self.position = simulator.Position()
@@ -92,6 +94,23 @@ class Env:
         current = self.data[begin:end]
         close = current["close"].iloc[-1]
 
+        if self.max_step-1 <= end:
+            self.eval_reward(2, close) # 最後には売る
+        else:
+            self.eval_reward(action, close)
+
+        self.state = self.screen(self.data[begin:end])
+
+        self.score += self.reward
+
+        if not self.terminal:
+            if self.max_step-1 <= end:
+                print("gain: ", self.gain)
+                self.terminal = True
+            else:
+                self.terminal = False
+
+    def eval_reward(self, action, close):
         # 買い
         if action == 1:
             self.position.add_history(100, close)
@@ -102,6 +121,7 @@ class Env:
             if order > 0:
                 self.position.add_history(-order, close)
                 gain = close - hold
+                self.gain += gain * order
                 if gain > 0:
                     self.reward = int(order / 100)
                 else:
@@ -109,13 +129,28 @@ class Env:
         elif action > 2:
             self.reward = 0
 
-        self.state = self.screen(self.data[begin:end])
-        self.terminal = False
-
-        self.score += self.reward
-
-        if self.max_step-1 <= end:
-            self.terminal = True
+#    def eval_reward(self, action, close):
+#        # 買い
+#        if action == 1:
+#            self.position.add_history(100, close)
+#        # 売り
+#        elif action == 2:
+#            hold = self.position.value()
+#            order = self.position.num()
+#            if order > 0:
+#                self.position.add_history(-order, close)
+#                gain = close - hold
+#                self.gain += gain * order
+#                if gain > 0:
+#                    self.reward = 1
+#                else:
+#                    self.reward = -2
+#
+#                if self.gain < -self.max_loss:
+#                    self.reward = -self.max_step
+#                    self.terminal = True
+#        elif action > 2:
+#            self.reward = 0
 
     def execute_action(self, action):
         self.update(action)
