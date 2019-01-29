@@ -176,5 +176,8 @@ class Agent:
 
     def save_model(self):
         yaml_string = self.model.to_yaml()
-        open(os.path.join(self.settings_path(), "model", "dqn_model.yaml"), 'w').write(yaml_string)
-        self.model.save_weights(os.path.join(self.settings_path(), "model", "dqn_model_weights.hdf"))
+        savedir = os.path.join(self.settings_path(), "model")
+        if not os.path.exists(savedir):
+            os.makedirs(savedir)
+        open(os.path.join(savedir, "dqn_model.yaml"), 'w').write(yaml_string)
+        self.model.save_weights(os.path.join(savedir, "dqn_model_weights.hdf"))
