@@ -28,7 +28,7 @@ class Env:
         self.gain = 0
         self.terminal = False
         self.code = None
-        self.position = simulator.Position()
+        self.position = simulator.Position(min_unit=100)
         if self.data is None:
             self.create_data(self.start_date, self.end_date)
         self.columns = [
